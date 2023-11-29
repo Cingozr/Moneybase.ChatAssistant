@@ -1,0 +1,108 @@
+﻿@page "/"
+
+@using Microsoft.AspNetCore.SignalR.Client
+@using ChatAssistant.Infrastructure.Data.Dtos.ResponseDtos
+@using System.Text.Json;
+
+@inject ILogger<Index> Logger
+@implements IAsyncDisposable
+
+<PageTitle>Home</PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card chat-card-fix-height">
+                <h5 class="card-header">
+                    Online Chat Support
+                </h5>
+                <div class="card-body scrollable-div">
+                    <div class="alert @_alertClass" role="alert">@_chatSupportMessage</div> 
+                </div>
+                <div class="card-footer">
+                    <button type="button" @onclick="RequestChatSupport" class="btn btn-primary btn-md" disabled="@_isRequestButtonDisabled">Request a chat support</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    #region Html Class
+    private const string _alertWarningClass = "alert-warning";
+    private const string _alertSuccessClass = "alert-success";
+
+    #endregion
+
+    private HubConnection _hubConnection;
+    private string _chatSupportMessage = "Welcome to Online Chat Support!"; 
+    private bool _isRequestButtonDisabled = false;
+    private string _alertClass = string.Empty;
+    protected override async Task OnInitializedAsync()
+    {
+
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:55058/chat-notifications")
+            .WithAutomaticReconnect()
+            .Build();
+
+        _hubConnection.On<string>("NotifyChatSupportAssigned", message => HandleChatSupportAssigned(JsonSerializer.Deserialize<ServiceResponseModel>(message)));
+        _hubConnection.On<string>("NotifyAgentsUnavailable", message => HandleNotifyAgentsUnavailable(JsonSerializer.Deserialize<ServiceResponseModel>(message)));
+        _hubConnection.On<string>("NotifyChatSupportSent", message => HandleNotifyAgentsUnavailable(message));
+
+        await _hubConnection.StartAsync();
+    }
+
+    private async Task HandleChatSupportAssigned(ServiceResponseModel response)
+    {
+        _alertClass = _alertSuccessClass;
+        _chatSupportMessage = response.Message;
+        Logger.LogInformation(response?.Message);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleNotifyAgentsUnavailable(ServiceResponseModel response)
+    {
+        _alertClass = _alertWarningClass;
+        _chatSupportMessage = response.Message;
+        Logger.LogInformation(response?.Message);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleNotifyAgentsUnavailable(string response)
+    {
+        _alertClass = _alertSuccessClass;
+        _chatSupportMessage = response; 
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+
+    private async Task RequestChatSupport()
+    {
+        if (_hubConnection.State == HubConnectionState.Connected)
+        {
+            _isRequestButtonDisabled = true;
+            await _hubConnection.InvokeAsync("RequestSupport");
+            _chatSupportMessage = "Your request was sent successfully";
+        }
+        else
+        {
+            _chatSupportMessage = "Unable to connect to chat support, please check your connection.";
+            _isRequestButtonDisabled = false;
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hubConnection is not null)
+        {
+            await _hubConnection.DisposeAsync();
+        }
+    }
+}
