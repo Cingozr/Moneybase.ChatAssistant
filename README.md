@@ -83,7 +83,8 @@ AssignChatSessionCommandHandler.cs(ChatAssistant.Application.Commands.AssignChat
 ##The description below is the description of the functions in this code block.
 
 
-# AssignChatSessionCommandHandler Functions
+# [AssignChatSessionCommandHandler](https://github.com/Cingozr/Moneybase.ChatAssistant/blob/master/src/Application/ChatAssistant.Application/Commands/AssignChatSession/AssignChatSessionCommandHandler.cs)
+ Functions
 
 ## Constructor: `AssignChatSessionCommandHandler`
 Initializes the command handler with necessary repositories and services, including team and chat session repositories, RabbitMQ client service, and chat configuration.
