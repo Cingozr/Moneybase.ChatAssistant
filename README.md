@@ -78,23 +78,62 @@ When you submit a "Request a chat support," the system receives your request and
   - Senior: 0.8
   - Team Lead: 0.5
 
+AssignChatSessionCommandHandler.cs(ChatAssistant.Application.Commands.AssignChatSession) This is the code block where chat assignment is made.
+ 
+##The description below is the description of the functions in this code block.
 
 
+# AssignChatSessionCommandHandler Functions
 
-# Used Technologies
-This section provides brief descriptions of the technologies used in the project.
-## MediatR
-MediatR is a mediator library for .NET. It separates commands, queries, and other logical operations in your application, reducing inter-class dependencies for cleaner and more manageable code.
+## Constructor: `AssignChatSessionCommandHandler`
+Initializes the command handler with necessary repositories and services, including team and chat session repositories, RabbitMQ client service, and chat configuration.
 
-## RabbitMQ
-RabbitMQ is an open-source message broker software. It facilitates asynchronous communication between applications, enhancing scalability and flexibility in high-traffic scenarios and large data flows.
+## Handle: `Handle`
+Handles the `AssignChatSessionCommand` request by processing the chat session assignment based on various business rules and conditions.
 
-## Refit
-Refit is a REST API client library for .NET. It's used for managing HTTP requests, allowing easy creation, management, and testing of your API calls.
+## DeserializeChatSession: `DeserializeChatSession`
+Converts a JSON string message into a `ChatSession` object.
 
-## FluentValidation
-FluentValidation is a powerful validation library for .NET. It allows you to define object validation rules in a clear, understandable, and maintainable way.
+## IsChatSessionActive: `IsChatSessionActive`
+Checks if a given chat session is currently active by querying the chat session repository.
 
-## AutoMapper
-AutoMapper is an object-to-object mapping tool for .NET. It simplifies data transfer between different objects, reducing the need for manual mapping and improving code readability and maintenance.
+## GetActiveTeam: `GetActiveTeam`
+Retrieves the active team based on the current shift timing from the team repository.
+
+## AssignAgent: `AssignAgent`
+Assigns an agent to a chat session from the active team or the overflow team if necessary, based on availability and business rules.
+
+## CreateBadRequestResponse: `CreateBadRequestResponse`
+Creates a response model indicating a bad request (HTTP 400) status.
+
+## CreateSuccessResponse: `CreateSuccessResponse`
+Creates a response model indicating a successful operation (HTTP 200) with the chat session data.
+
+## CreateServiceUnavailableResponse: `CreateServiceUnavailableResponse`
+Creates a response model indicating service unavailability (HTTP 503) with the chat session data.
+
+## IsShiftActive: `IsShiftActive`
+Determines if a given team's shift is currently active based on the current time.
+
+## GetAvailableAgent: `GetAvailableAgent`
+Identifies an available agent from a team, considering their availability and the number of active chat sessions.
+
+## AssignSessionToAgentAsync: `AssignSessionToAgentAsync`
+Assigns a chat session to a specified agent and updates the chat session details in the repository.
+
+## IsAgentAvailable: `IsAgentAvailable`
+Checks if an agent is available to take on a new chat session based on their current active chat sessions and maximum concurrent chat limit.
+
+## IsQueueFull: `IsQueueFull`
+Determines if the chat session queue has reached its maximum capacity based on the active team's capacity and a defined multiplier.
+
+## GetQueueLength: `GetQueueLength`
+Retrieves the current length of the chat session queue from the RabbitMQ client service.
+
+## GetOverflowTeam: `GetOverflowTeam`
+Selects the overflow team from the list of teams, typically used when the regular team's capacity is exceeded.
+
+## ShiftTimings: `ShiftTimings`
+A nested class defining constants for shift start and end times, as well as the overflow capacity multiplier.
+
 
